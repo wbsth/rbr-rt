@@ -9,26 +9,28 @@ namespace rbr_rt.Utils
 {
     public static class MiscTools
     {
-        public static byte[]? ReadSetupFromReplay(string replayPath)
-        {
-            byte[] replayByteArray = File.ReadAllBytes(replayPath);
-            var indexList = FindSetupIndex(ref replayByteArray);
-            if (!indexList.Contains(0))
-            {
-                return replayByteArray;
-            }
-            return null;
-        }
+        //public static byte[]? ReadSetupFromReplay(string replayPath)
+        //{
+        //    byte[] replayByteArray = File.ReadAllBytes(replayPath);
+        //    var indexList = FindSetupIndex(ref replayByteArray);
+        //    if (!indexList.Contains(0))
+        //    {
+        //        return replayByteArray;
+        //    }
+        //    return null;
+        //}
 
         /// <summary> Returns indexes of bytes starting and ending setup part in replay </summary>
-        public static List<int> FindSetupIndex(ref byte[] bytes)
+        public static (int, int) FindSetupIndex(ref byte[] bytes)
         {
-            byte[] currentStart = new byte[3];
-            byte[] currentEnd = new byte[5];
-            byte[] startbytes = new byte[] { 0x28, 0x28, 0x22 };
-            byte[] endbytes = new byte[] { 0x29, 0x0A, 0x20, 0x29, 0x29 };
+            var currentStart = new byte[3];
+            var currentEnd = new byte[5];
+            var startBytes = new byte[] { 0x28, 0x28, 0x22 };
+            var endBytes = new byte[] { 0x29, 0x0A, 0x20, 0x29, 0x29 };
             var maxSearchRange = bytes.Length - 1;
-            List<int> indexList = new List<int> { 0, 0 };
+
+            var startIndex = 0;
+            var endIndex = 0;
 
             for (var index = 0; index < maxSearchRange; index++)
             {
@@ -37,29 +39,29 @@ namespace rbr_rt.Utils
                     currentStart[i] = bytes[index + i];
                 }
 
-                if ((startbytes).SequenceEqual(currentStart))
+                if ((startBytes).SequenceEqual(currentStart))
                 {
-                    indexList[0] = index;
+                    startIndex = index;
                     break;
                 }
 
             }
 
-            for (var index = indexList[0]; index < maxSearchRange; index++)
+            for (var index = startIndex; index < maxSearchRange; index++)
             {
                 for (var i = 0; i < 5; i++)
                 {
                     currentEnd[i] = bytes[index + i];
                 }
 
-                if ((endbytes).SequenceEqual(currentEnd))
+                if ((endBytes).SequenceEqual(currentEnd))
                 {
-                    indexList[1] = index + 4;
+                    endIndex = index + 4;
                     break;
                 }
             }
 
-            return indexList;
+            return (startIndex, endIndex);
         }
 
     }
