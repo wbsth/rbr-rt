@@ -9,27 +9,27 @@ namespace rbr_rt.Utils
 {
     public class SetupExtractor
     {
-        private int startIndex;
-        private int endIndex;
-        private byte[] replayByteArray;
+        private int _startIndex;
+        private int _endIndex;
+        private byte[] _replayByteArray;
 
         public SetupExtractor()
         {
-            startIndex = 0;
-            endIndex = 0;
+            _startIndex = 0;
+            _endIndex = 0;
         }
 
         public bool FindSetup(string replayPath)
         {
-            replayByteArray = File.ReadAllBytes(replayPath);
-            (startIndex, endIndex) = MiscTools.FindSetupIndex(ref replayByteArray);
-            return (startIndex != 0 && endIndex != 0);
+            _replayByteArray = File.ReadAllBytes(replayPath);
+            (_startIndex, _endIndex) = MiscTools.FindSetupIndex(ref _replayByteArray);
+            return (_startIndex != 0 && _endIndex != 0);
 
         }
 
         public bool SaveSetup(string setupPath)
         {
-            byte[] setup = replayByteArray.Skip(startIndex).Take(endIndex - startIndex + 1).ToArray();
+            byte[] setup = _replayByteArray.Skip(_startIndex).Take(_endIndex - _startIndex + 1).ToArray();
             try
             {
                 File.WriteAllBytes(setupPath, setup);
