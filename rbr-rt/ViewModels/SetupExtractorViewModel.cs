@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using rbr_rt.Utils;
+using Serilog;
 
 namespace rbr_rt.ViewModels
 {

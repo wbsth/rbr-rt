@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
+using Serilog;
 
 namespace rbr_rt
 {
@@ -13,5 +8,18 @@ namespace rbr_rt
     /// </summary>
     public partial class App : Application
     {
+        private void App_OnStartup(object sender, StartupEventArgs e)
+        {
+            // configure logger
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Debug()
+                .WriteTo.File("logs/rbrrt.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            // show main app window
+            var mainWindow = new MainWindow();
+            mainWindow.Show();
+        }
     }
 }

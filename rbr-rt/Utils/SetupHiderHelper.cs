@@ -35,16 +35,10 @@ namespace rbr_rt.Utils
             string setupString = Encoding.ASCII.GetString(setupByteArray.ToArray());
             var replayValues = ExtractIntegers(replayString, ref valuesIndexes);
             var setValues = ExtractIntegers(setupString, ref setupIndexes);
-            //Replace(replayValues, setValues, valuesIndexes, setupIndexes, outPath);
-            var valuesRead = ReadValues(setupString);
-            var replayValuesRead = ReadValues(replayString);
-            if (valuesRead.Count > 0)
-            {
-                ReplaceValues(valuesRead, replayString);
-                return true;
-            }
+            if (replayValues.Count != setValues.Count) return false;
 
-            return false;
+            Replace(replayValues, setValues, valuesIndexes, setupIndexes, outPath);
+            return true;
         }
 
         private List<(string, float)> ReadValues(string inputString)
@@ -74,43 +68,31 @@ namespace rbr_rt.Utils
             return tupleList;
         }
 
-        private void ReplaceValues(List<(string, float)> sourceValues, string replaySetupString)
+        private void Replace(List<string> replay, List<string> setup, List<int> repInd, List<int> setInd, string outPath)
         {
-            foreach (var item in sourceValues)
+            for (int i = 0; i < replay.Count; i++)
             {
-                // search for item in replay setup file
-                var indexFound = replaySetupString.IndexOf(item.Item1);
-                if (indexFound != -1)
+                if (replay[i] != setup[i])
                 {
-
+                    if (replay[i].Length == setup[i].Length)
+                    {
+                        byte[] temp = Encoding.ASCII.GetBytes(setup[i]);
+                        Array.Copy(temp, 0, replayByteArray, startIndex + repInd[i], temp.Length);
+                    }
+                    else if (setup[i].Contains('.') && replay[i].Contains('.'))
+                    {
+                        int lengthDifference = setup[i].Length - replay[i].Length;
+                        int zeroes = setup[i].Split('.')[1].Length;
+                        float parsed = float.Parse(setup[i]);
+                        var formatted = parsed.ToString($"F{zeroes - lengthDifference}");
+                        byte[] temp = Encoding.ASCII.GetBytes(formatted);
+                        Array.Copy(temp, 0, replayByteArray, startIndex + repInd[i], temp.Length);
+                    }
                 }
-            }
-        }
-        //private void Replace(List<string> replay, List<string> setup, List<int> repInd, List<int> setInd, string outPath)
-        //{
-        //    for (int i = 0; i < replay.Count; i++)
-        //    {
-        //        if (replay[i] != setup[i])
-        //        {
-        //            if (replay[i].Length == setup[i].Length)
-        //            {
-        //                byte[] temp = Encoding.ASCII.GetBytes(setup[i]);
-        //                Array.Copy(temp, 0, replayByteArray, startIndex + repInd[i], temp.Length);
-        //            }
-        //            else if (setup[i].Contains('.') && replay[i].Contains('.'))
-        //            {
-        //                int lengthDifference = setup[i].Length - replay[i].Length;
-        //                int zeroes = setup[i].Split('.')[1].Length;
-        //                float parsed = float.Parse(setup[i]);
-        //                var formatted = parsed.ToString($"F{zeroes - lengthDifference}");
-        //                byte[] temp = Encoding.ASCII.GetBytes(formatted);
-        //                Array.Copy(temp, 0, replayByteArray, startIndex + repInd[i], temp.Length);
-        //            }
-        //        }
 
-        //    }
-        //    File.WriteAllBytes(outPath, replayByteArray);
-        //}
+            }
+            File.WriteAllBytes(outPath, replayByteArray);
+        }
 
         private static List<string> ExtractIntegers(string text, ref List<int> indexes)
         {

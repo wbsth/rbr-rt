@@ -114,7 +114,7 @@ namespace rbr_rt.ViewModels
             };
             if (saveFileDialog.ShowDialog() == true)
             {
-                _outputPath = saveFileDialog.FileName;
+                OutputPath = saveFileDialog.FileName;
                 if (_setupHiderHelper.HideSetup(ReplayPath, SetupPath, OutputPath))
                 {
                     MessageBox.Show("Setup replaced", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
