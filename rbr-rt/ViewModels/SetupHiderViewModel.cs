@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using AdonisUI.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
-using rbr_rt.Core;
 using rbr_rt.Utils;
 
 namespace rbr_rt.ViewModels
@@ -15,12 +11,12 @@ namespace rbr_rt.ViewModels
     {
         public SetupHiderViewModel()
         {
-            OpenReplayFileCommand = new RelayCommand(o => OpenReplayFileExecute());
-            OpenSetupFileCommand = new RelayCommand(o => OpenSetupFileExecute());
-            ReplaceSetupCommand = new RelayCommand(o => ReplaceSetupExecute(), o => ReplaceButtonIsActive);
+            OpenReplayFileCommand = new RelayCommand(OpenReplayFileExecute);
+            OpenSetupFileCommand = new RelayCommand(OpenSetupFileExecute);
+            ReplaceSetupCommand = new RelayCommand(ReplaceSetupExecute, () => ReplaceButtonIsActive);
             _setupHiderHelper = new SetupHiderHelper();
         }
-
+        
         private readonly SetupHiderHelper _setupHiderHelper;
         private bool ReplaceButtonIsActive => !string.IsNullOrEmpty(ReplayPath) && !string.IsNullOrEmpty(SetupPath);
 
@@ -29,6 +25,7 @@ namespace rbr_rt.ViewModels
         private string _setupPath;
         private string _outputPath;
 
+        /// <summary> Input path of the replay to be processed </summary>
         public string ReplayPath
         {
             get => _replayPath;
@@ -38,10 +35,12 @@ namespace rbr_rt.ViewModels
                 {
                     _replayPath = value;
                     OnPropertyChanged();
+                    ReplaceSetupCommand.NotifyCanExecuteChanged();
                 }
             }
         }
 
+        /// <summary> Input path of the car setup to be 'injected' into replay </summary>
         public string SetupPath
         {
             get => _setupPath;
@@ -51,10 +50,12 @@ namespace rbr_rt.ViewModels
                 {
                     _setupPath = value;
                     OnPropertyChanged();
+                    ReplaceSetupCommand.NotifyCanExecuteChanged();
                 }
             }
         }
 
+        /// <summary> Output path, where prepared replay file should be saved</summary>
         public string OutputPath
         {
             get => _outputPath;
@@ -69,18 +70,26 @@ namespace rbr_rt.ViewModels
         }
 
 
+        # region COMMANDS
+        
         public RelayCommand OpenReplayFileCommand { get; }
         public RelayCommand OpenSetupFileCommand { get; }
         public RelayCommand ReplaceSetupCommand { get; }
+        
+        #endregion
 
+        # region COMMANDS EXECUTES
         private void OpenReplayFileExecute()
         {
+            // open replay file (only .rpl should be accepted)
             OpenFileDialog openFileDialog = new OpenFileDialog()
             {
                 DefaultExt = ".rpl",
                 Filter = "RBR replay|*.rpl",
                 InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory
             };
+            
+            // if user entered file, save its path, and its name (without extension)
             if (openFileDialog.ShowDialog() == true)
             {
                 ReplayPath = openFileDialog.FileName;
@@ -89,21 +98,26 @@ namespace rbr_rt.ViewModels
         }
 
         private void OpenSetupFileExecute()
-        {
+        {            
+            // open setup file (only .lsp should be accepted)
             OpenFileDialog openFileDialog = new OpenFileDialog()
             {
                 DefaultExt = ".lsp",
                 Filter = "RBR setup|*.lsp",
                 InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory
             };
+            
+            // if used entered file, save its path
             if (openFileDialog.ShowDialog() == true)
             {
                 SetupPath = openFileDialog.FileName;
             }
         }
 
+        
         private void ReplaceSetupExecute()
         {
+            // choose output file location
             SaveFileDialog saveFileDialog = new SaveFileDialog()
             {
                 Title = "Save setup file",
@@ -112,6 +126,8 @@ namespace rbr_rt.ViewModels
                 DefaultExt = ".rpl",
                 InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory
             };
+            
+            // prepare output file
             if (saveFileDialog.ShowDialog() == true)
             {
                 OutputPath = saveFileDialog.FileName;
@@ -125,6 +141,7 @@ namespace rbr_rt.ViewModels
                 }
             }
         }
-
+        
+        #endregion
     }
 }

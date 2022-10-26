@@ -27,8 +27,6 @@
                   Margin="10">
             <uc:SetupHider/>
         </GroupBox>
-
         
-
     </Grid>
 </adonisControls:AdonisWindow>

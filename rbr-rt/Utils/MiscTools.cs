@@ -1,44 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace rbr_rt.Utils
 {
     public static class MiscTools
     {
-        //public static byte[]? ReadSetupFromReplay(string replayPath)
-        //{
-        //    byte[] replayByteArray = File.ReadAllBytes(replayPath);
-        //    var indexList = FindSetupIndex(ref replayByteArray);
-        //    if (!indexList.Contains(0))
-        //    {
-        //        return replayByteArray;
-        //    }
-        //    return null;
-        //}
-
         /// <summary> Returns indexes of bytes starting and ending setup part in replay </summary>
         public static (int, int) FindSetupIndex(ref byte[] bytes)
         {
-            var currentStart = new byte[3];
-            var currentEnd = new byte[5];
-            var startBytes = new byte[] { 0x28, 0x28, 0x22 };
-            var endBytes = new byte[] { 0x29, 0x0A, 0x20, 0x29, 0x29 };
+            var currentStart = new byte?[3];
+            var currentEnd = new byte?[5];
+            var startBytes = new byte?[] { 0x28, 0x28, 0x22 };               // bytes at the beginning of the setup file
+            var endBytes = new byte?[] { 0x29, 0x0A, 0x20, 0x29, 0x29 };     // bytes at the end of the setup file
             var maxSearchRange = bytes.Length - 1;
 
             var startIndex = 0;
             var endIndex = 0;
-
+            
+            // iterate through file bytes to find where setup part starts
             for (var index = 0; index < maxSearchRange; index++)
             {
-                for (var i = 0; i < 3; i++)
-                {
-                    currentStart[i] = bytes[index + i];
-                }
-
+                // shift array one element to the left
+                Array.Copy(currentStart, 1, currentStart, 0, currentStart.Length - 1);
+                
+                // and write current byte to last place
+                currentStart[^1] = bytes[index];
+                
+                // if current bytes sequence equals to the setup start sequence, success
                 if ((startBytes).SequenceEqual(currentStart))
                 {
                     startIndex = index;
@@ -47,16 +35,18 @@ namespace rbr_rt.Utils
 
             }
 
+            // iterate through file bytes to find where setup part ends
             for (var index = startIndex; index < maxSearchRange; index++)
             {
-                for (var i = 0; i < 5; i++)
-                {
-                    currentEnd[i] = bytes[index + i];
-                }
-
+                // shift array one element to the left
+                Array.Copy(currentEnd, 1, currentEnd, 0, currentEnd.Length - 1);
+                
+                // and write current byte to last place
+                currentEnd[^1] = bytes[index];
+                
                 if ((endBytes).SequenceEqual(currentEnd))
                 {
-                    endIndex = index + 4;
+                    endIndex = index;
                     break;
                 }
             }

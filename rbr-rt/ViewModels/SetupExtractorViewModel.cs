@@ -1,14 +1,10 @@
 ﻿using AdonisUI.Controls;
 using Microsoft.Win32;
-using rbr_rt.Core;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using rbr_rt.Utils;
-using Serilog;
 
 namespace rbr_rt.ViewModels
 {
@@ -16,16 +12,19 @@ namespace rbr_rt.ViewModels
     {
         public SetupExtractorViewModel()
         {
-            OpenFileCommand = new RelayCommand(o => OpenFileExecute());
-            ExtractCommand = new RelayCommand(o => ExtractExecute(), o=>!String.IsNullOrEmpty(ReplayPath));
+            OpenFileCommand = new RelayCommand(OpenFileExecute);
+            ExtractCommand = new RelayCommand(ExtractExecute, () => !string.IsNullOrEmpty(ReplayPath));
             _setupExtractor = new SetupExtractor();
         }
 
-        private string fileName;
-        private SetupExtractor _setupExtractor;
-
-        private string _replayPath;
+        /// <summary> Utility to provide proper setup extracting </summary>
+        private readonly SetupExtractor _setupExtractor;
+        
+        /// <summary> Keeps the name of the loaded replay </summary>
+        private string _fileName;
         private string _setupPath;
+        
+        private string _replayPath;
         public string ReplayPath 
         {
             get => _replayPath;
@@ -35,26 +34,31 @@ namespace rbr_rt.ViewModels
                 {
                     _replayPath = value;
                     OnPropertyChanged();
+                    ExtractCommand.NotifyCanExecuteChanged();
                 }
             }
         }
+        
+        #region COMMANDS
+        
+        public RelayCommand OpenFileCommand { get; }
+        public RelayCommand ExtractCommand { get; }
+        
+        #endregion
 
-        public RelayCommand OpenFileCommand { get; set; }
-        public RelayCommand ExtractCommand { get; set; }
-
-
+        #region COMMANDS EXECUTES
         private void OpenFileExecute()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog()
             {
                 DefaultExt = ".rpl",
                 Filter = "RBR replay|*.rpl",
-                InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory
+                InitialDirectory = AppDomain.CurrentDomain.BaseDirectory
             };
             if(openFileDialog.ShowDialog() == true)
             {
                 ReplayPath = openFileDialog.FileName;
-                fileName = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+                _fileName = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
             }
         }
 
@@ -67,9 +71,9 @@ namespace rbr_rt.ViewModels
                 {
                     Title = "Save setup file",
                     Filter = "RBR setup|*.lsp",
-                    FileName = fileName,
+                    FileName = _fileName,
                     DefaultExt = ".lsp",
-                    InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory
+                    InitialDirectory = AppDomain.CurrentDomain.BaseDirectory
                 };
                 if (saveFileDialog.ShowDialog() == true)
                 {
@@ -89,6 +93,8 @@ namespace rbr_rt.ViewModels
                 MessageBox.Show("No setup found! Is this a correct RBR replay file?", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        
+        #endregion
 
     }
 }
