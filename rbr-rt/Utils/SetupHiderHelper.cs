@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -68,7 +69,7 @@ namespace rbr_rt.Utils
                     {
                         int lengthDifference = setup[i].Length - replay[i].Length;
                         int zeroes = setup[i].Split('.')[1].Length;
-                        float parsed = float.Parse(setup[i]);
+                        float parsed = float.Parse(setup[i], CultureInfo.InvariantCulture);
                         var formatted = parsed.ToString($"F{zeroes - lengthDifference}");
                         byte[] temp = Encoding.ASCII.GetBytes(formatted);
                         Array.Copy(temp, 0, replayByteArray, startIndex + repInd[i], temp.Length);
