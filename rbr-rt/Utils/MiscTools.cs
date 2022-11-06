@@ -29,7 +29,7 @@ namespace rbr_rt.Utils
                 // if current bytes sequence equals to the setup start sequence, success
                 if ((startBytes).SequenceEqual(currentStart))
                 {
-                    startIndex = index;
+                    startIndex = index - startBytes.Length + 1;
                     break;
                 }
 
